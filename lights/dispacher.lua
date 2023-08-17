@@ -8,7 +8,7 @@ local function add_room(args)
 end
 
 add_room({x = 94, y = 60, z = 652, autorized = nil, receiver_id = 22, name = "Reactor Laboratory", lpos = {x = 117, y = 70, z = 682}})
-add_room({x = 0, y = 0, z = 0, autorized = nil, receiver_id = 3, name = "Office CTech", lpos = {x = 0, y = 0, z = 0}})
+add_room({x = 119, y = 59, z = 691, autorized = {8, 9}, receiver_id = 3, name = "Office CTech", lpos = {x = 149, y = 66, z = 721}})
 
 -- local base_center = {x = 0, y = 0, z = 0, autorized = {}}
 -- local base_center_b = {x = 0, y = 0, z = 0}
