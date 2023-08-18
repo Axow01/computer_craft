@@ -8,11 +8,13 @@ local function add_room(args)
 end
 
 add_room({x = 94, y = 60, z = 652, autorized = nil, receiver_id = 22, name = "Reactor Laboratory", lpos = {x = 117, y = 70, z = 682}})
-add_room({x = 119, y = 59, z = 691, autorized = {8, 9}, receiver_id = 3, name = "Office CTech", lpos = {x = 149, y = 66, z = 721}})
+add_room({x = 119, y = 59, z = 694, autorized = nil, receiver_id = 3, name = "Office CTech", lpos = {x = 149, y = 66, z = 721}})
+add_room({x = 119, y = 60, z = 675, autorized = nil, receiver_id = nil, name = "Nexus", lpos = {x = 141, y = 70, z = 692}})
 
 -- local base_center = {x = 0, y = 0, z = 0, autorized = {}}
 -- local base_center_b = {x = 0, y = 0, z = 0}
 local screen_id = 5
+local version_phones = "3.3"
 local phones = {}
 -- local phones_id = {}
 
@@ -38,7 +40,7 @@ local function check_autorization(room, sender_id)
 end
 
 local function check_all(phone_pos, room, room_b, sender_id)
-	if (check_pos(phone_pos, room_b, room)) then
+	if (check_pos(phone_pos, room_b, room) and room.receiver_id ~= nil) then
 		if (check_autorization(room, sender_id)) then
 			rednet.send(room.receiver_id, true, "lights_activation_440")
 		else
@@ -54,7 +56,7 @@ local function close_lights(phones, room, room_b)
 	for i = 1, #phones do
 		if (check_pos(phones[i][2], room_b, room)) then status = true end
 	end
-	if (status == false) then
+	if (room.receiver_id ~= nil and status == false) then
 		rednet.send(room.receiver_id, false, "lights_activation_440")
 	end
 end
@@ -69,6 +71,12 @@ local function add_phone(sender_id, pos)
 	table.insert(phones, {sender_id, pos})
 end
 
+local function deployUpdate()
+	for i = 0, 5 do
+		rednet.broadcast({"update", true}, "ctech_phones_440")
+	end
+end
+
 term.clear()
 term.setCursorBlink(false)
 term.setCursorPos(1, 1)
@@ -78,17 +86,21 @@ term.setCursorPos(2, 1)
 
 while (true) do
 	local sender_id, message, distance_or_protocol = rednet.receive("lights_dispacher_440")
-	local pos = {x = message[1], y = message[2], z = message[3]}
+	if (message == "update") then deployUpdate()
+	else
+		local version_client = message[2]
 
-	add_phone(sender_id, pos)
-	for i = 1, #rooms do
-		check_all(pos, rooms[i], rooms[i].lpos, sender_id)
-		close_lights(phones, rooms[i], rooms[i].lpos)
-	end
-	rednet.send(screen_id, {phones, rooms}, "lights_dispacher_440")
-	if (redstone.getInput("left")) then
-		rednet.broadcast({"update", true}, "ctech_phones_440")
-		os.sleep(2)
-		return
+		if (type(version_client) == "string" and version_client == version_phones) then
+			rednet.send(sender_id, {"continue", true}, "ctech_phones_440")
+			local pos = {x = message[1][1], y = message[1][2], z = message[1][3]}
+			add_phone(sender_id, pos)
+			for i = 1, #rooms do
+				check_all(pos, rooms[i], rooms[i].lpos, sender_id)
+				close_lights(phones, rooms[i], rooms[i].lpos)
+			end
+		else
+			rednet.send(sender_id, {"update", true}, "ctech_phones_440")
+		end
+		rednet.send(screen_id, {phones, rooms}, "lights_dispacher_440")
 	end
 end
