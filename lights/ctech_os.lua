@@ -12,7 +12,8 @@ function update()
 end
 
 function get_dispacher_order()
-	local sender_id, message, distance_protocol = rednet.receive("ctech_phones_440", 0.5)
+	local sender_id, message, distance_protocol = rednet.receive("ctech_phones_440", 1)
+	print(sender_id)
 	if (sender_id == dispacher_id) then
 		local cmd = {cmd = message[1], active = message[2]}
 		if (cmd.cmd == "shutdown" and cmd.active) then os.shutdown() end
@@ -21,6 +22,7 @@ function get_dispacher_order()
 end
 
 while (true) do
+	get_dispacher_order()
 	local pos = {gps.locate()}
 	if (pos[1] >= base_pos.x and pos[1] <= base_bigger_pos.x and pos[3] >= base_pos.z and pos[3] <= base_bigger_pos.z) then
 		rednet.send(dispacher_id, pos, "lights_dispacher_440")

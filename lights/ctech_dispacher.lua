@@ -86,4 +86,9 @@ while (true) do
 		close_lights(phones, rooms[i], rooms[i].lpos)
 	end
 	rednet.send(screen_id, {phones, rooms}, "lights_dispacher_440")
+	if (redstone.getInput("left")) then
+		rednet.broadcast({"update", true}, "ctech_phones_440")
+		os.sleep(2)
+		return
+	end
 end
